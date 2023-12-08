@@ -6,8 +6,7 @@ expertise predicts perceived tension in intervals better than
 psychoacoustics across North and South Indian listeners” by Imre
 Lahdelma, [Tuomas Eerola](https://tuomaseerola.github.io/), Nashra
 Ahmad, Martin Clayton, James Armitage, Budhaditya Bhattacharyya, and
-Niveshan Munsamy. Read this document at the [documentation
-site](https://tuomaseerola.github.io/interval_tension/).
+Niveshan Munsamy.
 
 ## Load data
 
@@ -29,6 +28,27 @@ knitr::kable(head(df),format = 'markdown')
 | Music-loving nonmusician | Music-loving nonmusician | Male   |  23 | I4          |         2 | m2       |             2 | Indian - non-musicians | Non-Musician | Non-Musician  | Non-Musician  |  16.666667 |
 | Music-loving nonmusician | Music-loving nonmusician | Male   |  18 | I5          |         0 | m2       |             5 | Indian - non-musicians | Non-Musician | Non-Musician  | Non-Musician  |   0.000000 |
 | Nonmusician              | Nonmusician              | Male   |  22 | I6          |         1 | m2       |             1 | Indian - non-musicians | Non-Musician | Non-Musician  | Non-Musician  |   8.333333 |
+
+**Brief explanation of columns**
+
+- `omsi1indian` refers to participant’s own decision of how they
+  identify themselves as indian musicians according to OMSI 1-item
+  question.
+- `omsi1western` refers to participant’s own decision of how they
+  identify themselves as western musicians according to OMSI 1-item
+  question.
+- `gender` = Self-defined gender (Male/Female)
+- `age` = Age in years
+- `participant` = unique code for each participant
+- `Expertise` = Number of questions correct in custom Indian classical
+  music familiary questionnaire. Note that since Carnatic and Hindustani
+  questionnaires have different number of questions, we use the
+  proportion correct (`ExpertiseN`) as the index for the expertise.
+- `tension_rating` = Rating of tension from 1 to 7 (7-point scale)
+- `Group` = Carnatic, Hindustani or Indian non-musicians
+- `musicianship` = variable inferred from `omsi1indian`
+- `participant` = variable inferred from `omsi1western`
+- `ExpertiseN` = Proportion of expertise questions correct (0-100)
 
 ## Describe participants
 
@@ -199,6 +219,9 @@ print(pairs(emmeans(m1,~ Group2|Interval))) # this for each interval
     ##  Musicians - (Non-musicians)   -1.150 0.381 408  -3.014  0.0027
     ## 
     ## Degrees-of-freedom method: kenward-roger
+
+The comparison of intervals across musicians/non-musicians is also
+documented in the figure.
 
 #### Check discrimination of intervals within musicians
 

@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # README
 
-These are analysis operations and data for the study titled "Musical expertise predicts perceived tension in intervals better than psychoacoustics across North and South Indian listeners" by Imre Lahdelma, [Tuomas Eerola](https://tuomaseerola.github.io/), Nashra Ahmad, Martin Clayton, James Armitage, Budhaditya Bhattacharyya, and Niveshan Munsamy. Read this document at the [documentation site](https://tuomaseerola.github.io/interval_tension/).
+These are analysis operations and data for the study titled "Musical expertise predicts perceived tension in intervals better than psychoacoustics across North and South Indian listeners" by Imre Lahdelma, [Tuomas Eerola](https://tuomaseerola.github.io/), Nashra Ahmad, Martin Clayton, James Armitage, Budhaditya Bhattacharyya, and Niveshan Munsamy.
 
 ## Load data
 
@@ -21,6 +21,21 @@ options(dplyr.summarise.inform = FALSE)
 df <- read.csv('data/indian_tension_ratings.csv')
 knitr::kable(head(df),format = 'markdown')
 ```
+
+**Brief explanation of columns**
+
+* `omsi1indian` refers to participant's own decision of how they identify themselves as indian musicians according to OMSI 1-item question.
+* `omsi1western` refers to participant's own decision of how they identify themselves as western musicians according to OMSI 1-item question.
+* `gender` = Self-defined gender (Male/Female)
+* `age` = Age in years
+* `participant` = unique code for each participant
+* `Expertise` = Number of questions correct in custom Indian classical music familiary questionnaire. Note that since Carnatic and Hindustani questionnaires have different number of questions, we use the proportion correct (`ExpertiseN`) as the index for the expertise.
+* `tension_rating` = Rating of tension from 1 to 7 (7-point scale)
+* `Group` = Carnatic, Hindustani or Indian non-musicians
+* `musicianship` = variable inferred from `omsi1indian`
+* `participant` = variable inferred from `omsi1western`
+* `ExpertiseN` = Proportion of expertise questions correct (0-100)
+
 
 ## Describe participants
 
@@ -77,6 +92,8 @@ F_to_eta2(10.4117, 11, 757.09) # effect size
 
 print(pairs(emmeans(m1,~ Group2|Interval))) # this for each interval
 ```
+
+The comparison of intervals across musicians/non-musicians is also documented in the figure.
 
 #### Check discrimination of intervals within musicians
 
