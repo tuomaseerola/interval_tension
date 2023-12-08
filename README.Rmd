@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # README
 
-These are analysis operations and data for the study titled "Musical expertise predicts perceived tension in intervals better than psychoacoustics across North and South Indian listeners" by Imre Lahdelma, [Tuomas Eerola](https://tuomaseerola.github.io/), Nashra Ahmad, Martin Clayton, James Armitage, Budhaditya Bhattacharyya, and Niveshan Munsamy.
+These are analysis operations and data for the study titled "Musical expertise predicts perceived tension in harmonic intervals better than psychoacoustics across North and South Indian listeners" by Imre Lahdelma, [Tuomas Eerola](https://tuomaseerola.github.io/), Nashra Ahmad, Martin Clayton, James Armitage, Budhaditya Bhattacharyya, and Niveshan Munsamy.
 
 ## Load data
 
