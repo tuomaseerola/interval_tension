@@ -1,0 +1,154 @@
+---
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# README
+
+These are analysis operations and data for the study titled "Musical expertise predicts perceived tension in intervals better than psychoacoustics across North and South Indian listeners" by Imre Lahdelma, [Tuomas Eerola](https://tuomaseerola.github.io/), Nashra Ahmad, Martin Clayton, James Armitage, Budhaditya Bhattacharyya, and Niveshan Munsamy. Read this document at the [documentation site](https://tuomaseerola.github.io/interval_tension/).
+
+## Load data
+
+```{r load_data, warning = FALSE, message = FALSE}
+rm(list = ls())
+library(ggplot2)
+library(dplyr)
+library(papaja)
+options(dplyr.summarise.inform = FALSE)
+df <- read.csv('data/indian_tension_ratings.csv')
+knitr::kable(head(df),format = 'markdown')
+```
+
+## Describe participants
+
+```{r describe_data, warning = FALSE, message = FALSE}
+U<-as.character(unique(df$participant))
+background <- NULL
+for (k in 1:length(U)) {
+  tmp <- dplyr::filter(df,participant==U[k])
+  background<-rbind(background,tmp[1,])
+}
+
+SS <- summarise(group_by(background,Group),N=n(),ageM=mean(age,na.rm=TRUE),ageSE=sd(age,na.rm=TRUE)/sqrt(n()),expertiseM=mean(ExpertiseN,na.rm=TRUE),expertiseSE=sd(ExpertiseN,na.rm=TRUE)/sqrt(n()),female=sum(gender=='Female')/n()*100)
+
+knitr::kable(SS,digits = 2,format = 'markdown')
+
+m1 <- aov(ExpertiseN ~ Group, data=background)
+a<-apa_print(summary(m1))
+print(a$statistic)
+print(TukeyHSD(m1))
+```
+
+## LMM analysis
+
+### Are the Hindustani and Carnatic musicians tension ratings different from each other?
+
+```{r LMM, warning = FALSE, message = FALSE}
+library(lme4)
+library(lmerTest)
+library(emmeans)
+library(effectsize)
+
+# Take only Carnatic and Hindustani Musicians
+tmp<-dplyr::filter(df,Group=='Carnatic' | Group=='Hindustani')
+tmp$Group<-factor(tmp$Group)
+m1 <- lmer(tensionrating ~ Interval * Group + (1|participant), data=tmp)
+print(anova(m1))
+# No difference between the two expert groups nor interaction
+```
+
+### Differences between and within musicians and non-musicians?
+
+```{r LMM2}
+# Combine two musician groups and relabel everybody to musician/non-musician
+df$Group2<-as.character(df$Group)
+df$Group2[df$Group=='Carnatic']<-'Musicians'
+df$Group2[df$Group=='Hindustani']<-'Musicians'
+df$Group2[df$Group=='Indian - non-musicians']<-'Non-musicians'
+df$Group2<-factor(df$Group2)
+
+m1 <- lmer(tensionrating ~ Group2 * Interval + (1|participant),data = df)
+print(anova(m1))
+F_to_eta2(8.7738, 11, 757.09)  # effect size
+F_to_eta2(10.4117, 11, 757.09) # effect size
+
+print(pairs(emmeans(m1,~ Group2|Interval))) # this for each interval
+```
+
+#### Check discrimination of intervals within musicians
+
+```{r LMM-musicians}
+m1 <- lmer(tensionrating ~ Interval + (1|participant),data = dplyr::filter(df,Group2=='Musicians'))
+print(anova(m1))
+F_to_epsilon2(17.848, 11, 482.16) # 0.27 [0.21, 1.00]
+emm <- emmeans(m1,specs = pairwise ~ Interval,pbkrtest.limit = 4345, type = "response")
+emm$contrasts
+# 34/66 comparison significant at p<.05 level
+```
+
+#### Check discrimination of intervals within non-musicians
+
+```{r LMM-nonmusicians}
+m1 <- lmer(tensionrating ~ Interval + (1|participant),data = dplyr::filter(df,Group2=='Non-musicians'))
+anova(m1)
+F_to_epsilon2(4.5092, 11, 275) # 0.12 [0.04, 1.00]
+emm <- emmeans(m1,specs = pairwise ~ Interval,pbkrtest.limit = 4345, type = "response")
+
+print(emm$contrasts)
+# 7/66 comparison significant at p<.05 level
+```
+
+
+## Visualise tension ratings of both groups
+
+
+```{r figure, fig.width=10.5,fig.height=7,warning=FALSE,message=FALSE,results='asis'}
+# take the means and 95% CIs
+
+S <- df %>%
+  group_by(Interval,Group2) %>%
+  summarize(n=n(),M=mean(tensionrating,na.rm = TRUE),sd=sd(tensionrating,na.rm = TRUE)) %>%
+  mutate(se=sd/sqrt(n),LCI=M+qnorm(0.025)*se,UCI=M+qnorm(0.975)*se)
+
+dval<-0.33
+colnames(S)[2] <- 'Expertise'
+
+fig_india <- ggplot(S,aes(Interval,M,color=Expertise,group=Expertise,linestyle=Expertise,shape=Expertise))+
+  geom_point(position=position_dodge(dval),size=4)+
+  geom_line(position=position_dodge(dval))+
+  geom_errorbar(aes(min=LCI, max=UCI),width=.2,position=position_dodge(dval)) +
+  scale_y_continuous(breaks = seq(1,7,by=1),limits = c(1,7),expand = c(0.005,0.005))+
+  scale_color_brewer(type = "div",palette = 'Set2')+
+  scale_shape_manual(values=c(19,17))+  
+  ylab('Tension Rating (M ± 95% CI)')+
+  theme_bw()+
+  theme(legend.position="bottom")+
+  # Annotations take the statistics from analyses above
+  annotate("text",x = 1,y=5.87,label='italic(p)<.001',parse = TRUE,size=3)+
+  annotate("text",x = 4,y=5.87,label='italic(p)<.05',parse = TRUE,size=3)+
+  annotate("text",x = 5,y=5.87,label='italic(p)<.001',parse = TRUE,size=3)+
+  annotate("text",x = 7,y=5.87,label='italic(p)<0.01',parse = TRUE,size=3)+
+  annotate("text",x = 8,y=5.87,label='italic(p)<.05',parse = TRUE,size=3)+
+  annotate("text",x = 9,y=5.87,label='italic(p)<.001',parse = TRUE,size=3)+
+  annotate("text",x = 11,y=5.87,label='italic(p)<.05',parse = TRUE,size=3)+
+  annotate("text",x = 12,y=5.87,label='italic(p)<.01',parse = TRUE,size=3)+
+  annotate("text",x = 1,y=6.5,label='Between group comparisons',size=4,hjust=0)+
+  annotate("text",x = 1,y=2.5,label='Within group comparisons',size=4,hjust=0)+
+  annotate("text",x = 1.5,y=2.0,label='Musicians:~34/66~intervals~differ~at~italic(p)<.05',color=RColorBrewer::brewer.pal(3, 'Set2')[1],size=3,hjust=0,parse=TRUE)+
+  annotate("text",x = 1.5,y=1.5,label='Non-musicians:~7/66~intervals~differ~at~italic(p)<.05',color=RColorBrewer::brewer.pal(3, 'Set2')[2],size=3,hjust=0,parse=TRUE)+
+  ggtitle('Indian samples (N=71)')
+print(fig_india)
+
+```
+
+#### Session information
+
+R version and libraries.
+
+```{r}
+print(sessionInfo())
+```
+
