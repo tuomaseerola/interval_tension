@@ -2,7 +2,7 @@
 # README
 
 These are analysis operations and data for the study titled “Musical
-expertise predicts perceived tension in intervals better than
+expertise better predictor of tension in harmonic intervals than
 psychoacoustics across North and South Indian listeners” by Imre
 Lahdelma, [Tuomas Eerola](https://tuomaseerola.github.io/), Nashra
 Ahmad, Martin Clayton, James Armitage, Budhaditya Bhattacharyya, and
@@ -105,6 +105,9 @@ library(lmerTest)
 library(emmeans)
 library(effectsize)
 
+# Put the intervals in the correct order in the factor
+iv_labels <- c('m2','M2','m3','M3','P4','A4','P5','m6','M6','m7','M7','P8')
+df$Interval<-factor(df$Interval,levels = iv_labels)
 # Take only Carnatic and Hindustani Musicians
 tmp<-dplyr::filter(df,Group=='Carnatic' | Group=='Hindustani')
 tmp$Group<-factor(tmp$Group)
@@ -170,10 +173,6 @@ F_to_eta2(10.4117, 11, 757.09) # effect size
 print(pairs(emmeans(m1,~ Group2|Interval))) # this for each interval
 ```
 
-    ## Interval = A4:
-    ##  contrast                    estimate    SE  df t.ratio p.value
-    ##  Musicians - (Non-musicians)    0.489 0.381 408   1.282  0.2006
-    ## 
     ## Interval = m2:
     ##  contrast                    estimate    SE  df t.ratio p.value
     ##  Musicians - (Non-musicians)    1.567 0.381 408   4.108  <.0001
@@ -189,6 +188,18 @@ print(pairs(emmeans(m1,~ Group2|Interval))) # this for each interval
     ## Interval = M3:
     ##  contrast                    estimate    SE  df t.ratio p.value
     ##  Musicians - (Non-musicians)   -0.950 0.381 408  -2.492  0.0131
+    ## 
+    ## Interval = P4:
+    ##  contrast                    estimate    SE  df t.ratio p.value
+    ##  Musicians - (Non-musicians)   -1.572 0.381 408  -4.121  <.0001
+    ## 
+    ## Interval = A4:
+    ##  contrast                    estimate    SE  df t.ratio p.value
+    ##  Musicians - (Non-musicians)    0.489 0.381 408   1.282  0.2006
+    ## 
+    ## Interval = P5:
+    ##  contrast                    estimate    SE  df t.ratio p.value
+    ##  Musicians - (Non-musicians)   -1.202 0.383 411  -3.141  0.0018
     ## 
     ## Interval = m6:
     ##  contrast                    estimate    SE  df t.ratio p.value
@@ -206,14 +217,6 @@ print(pairs(emmeans(m1,~ Group2|Interval))) # this for each interval
     ##  contrast                    estimate    SE  df t.ratio p.value
     ##  Musicians - (Non-musicians)    0.985 0.381 408   2.584  0.0101
     ## 
-    ## Interval = P4:
-    ##  contrast                    estimate    SE  df t.ratio p.value
-    ##  Musicians - (Non-musicians)   -1.572 0.381 408  -4.121  <.0001
-    ## 
-    ## Interval = P5:
-    ##  contrast                    estimate    SE  df t.ratio p.value
-    ##  Musicians - (Non-musicians)   -1.202 0.383 411  -3.141  0.0018
-    ## 
     ## Interval = P8:
     ##  contrast                    estimate    SE  df t.ratio p.value
     ##  Musicians - (Non-musicians)   -1.150 0.381 408  -3.014  0.0027
@@ -221,110 +224,7 @@ print(pairs(emmeans(m1,~ Group2|Interval))) # this for each interval
     ## Degrees-of-freedom method: kenward-roger
 
 The comparison of intervals across musicians/non-musicians is also
-documented in the figure.
-
-#### Check discrimination of intervals within musicians
-
-``` r
-m1 <- lmer(tensionrating ~ Interval + (1|participant),data = dplyr::filter(df,Group2=='Musicians'))
-print(anova(m1))
-```
-
-    ## Type III Analysis of Variance Table with Satterthwaite's method
-    ##          Sum Sq Mean Sq NumDF  DenDF F value    Pr(>F)    
-    ## Interval 367.42  33.402    11 482.16  17.848 < 2.2e-16 ***
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-``` r
-F_to_epsilon2(17.848, 11, 482.16) # 0.27 [0.21, 1.00]
-```
-
-    ## Epsilon2 (partial) |       95% CI
-    ## ---------------------------------
-    ## 0.27               | [0.21, 1.00]
-    ## 
-    ## - One-sided CIs: upper bound fixed at [1.00].
-
-``` r
-emm <- emmeans(m1,specs = pairwise ~ Interval,pbkrtest.limit = 4345, type = "response")
-emm$contrasts
-```
-
-    ##  contrast estimate    SE  df t.ratio p.value
-    ##  A4 - m2   0.42222 0.288 482   1.464  0.9494
-    ##  A4 - M2   0.86667 0.288 482   3.005  0.1102
-    ##  A4 - m3   1.75556 0.288 482   6.087  <.0001
-    ##  A4 - M3   1.97778 0.288 482   6.858  <.0001
-    ##  A4 - m6   1.84836 0.290 482   6.370  <.0001
-    ##  A4 - M6   1.84444 0.288 482   6.395  <.0001
-    ##  A4 - m7   0.57778 0.288 482   2.003  0.6910
-    ##  A4 - M7   0.31111 0.288 482   1.079  0.9954
-    ##  A4 - P4   2.02222 0.288 482   7.012  <.0001
-    ##  A4 - P5   2.07563 0.290 482   7.153  <.0001
-    ##  A4 - P8   2.60000 0.288 482   9.015  <.0001
-    ##  m2 - M2   0.44444 0.288 482   1.541  0.9283
-    ##  m2 - m3   1.33333 0.288 482   4.623  0.0003
-    ##  m2 - M3   1.55556 0.288 482   5.394  <.0001
-    ##  m2 - m6   1.42614 0.290 482   4.915  0.0001
-    ##  m2 - M6   1.42222 0.288 482   4.931  0.0001
-    ##  m2 - m7   0.15556 0.288 482   0.539  1.0000
-    ##  m2 - M7  -0.11111 0.288 482  -0.385  1.0000
-    ##  m2 - P4   1.60000 0.288 482   5.548  <.0001
-    ##  m2 - P5   1.65341 0.290 482   5.698  <.0001
-    ##  m2 - P8   2.17778 0.288 482   7.551  <.0001
-    ##  M2 - m3   0.88889 0.288 482   3.082  0.0896
-    ##  M2 - M3   1.11111 0.288 482   3.853  0.0073
-    ##  M2 - m6   0.98169 0.290 482   3.383  0.0368
-    ##  M2 - M6   0.97778 0.288 482   3.390  0.0360
-    ##  M2 - m7  -0.28889 0.288 482  -1.002  0.9976
-    ##  M2 - M7  -0.55556 0.288 482  -1.926  0.7422
-    ##  M2 - P4   1.15556 0.288 482   4.007  0.0041
-    ##  M2 - P5   1.20897 0.290 482   4.167  0.0021
-    ##  M2 - P8   1.73333 0.288 482   6.010  <.0001
-    ##  m3 - M3   0.22222 0.288 482   0.771  0.9998
-    ##  m3 - m6   0.09281 0.290 482   0.320  1.0000
-    ##  m3 - M6   0.08889 0.288 482   0.308  1.0000
-    ##  m3 - m7  -1.17778 0.288 482  -4.084  0.0030
-    ##  m3 - M7  -1.44444 0.288 482  -5.008  <.0001
-    ##  m3 - P4   0.26667 0.288 482   0.925  0.9989
-    ##  m3 - P5   0.32008 0.290 482   1.103  0.9945
-    ##  m3 - P8   0.84444 0.288 482   2.928  0.1344
-    ##  M3 - m6  -0.12942 0.290 482  -0.446  1.0000
-    ##  M3 - M6  -0.13333 0.288 482  -0.462  1.0000
-    ##  M3 - m7  -1.40000 0.288 482  -4.854  0.0001
-    ##  M3 - M7  -1.66667 0.288 482  -5.779  <.0001
-    ##  M3 - P4   0.04444 0.288 482   0.154  1.0000
-    ##  M3 - P5   0.09786 0.290 482   0.337  1.0000
-    ##  M3 - P8   0.62222 0.288 482   2.157  0.5814
-    ##  m6 - M6  -0.00392 0.290 482  -0.013  1.0000
-    ##  m6 - m7  -1.27058 0.290 482  -4.379  0.0009
-    ##  m6 - M7  -1.53725 0.290 482  -5.298  <.0001
-    ##  m6 - P4   0.17386 0.290 482   0.599  1.0000
-    ##  m6 - P5   0.22727 0.292 482   0.779  0.9998
-    ##  m6 - P8   0.75164 0.290 482   2.590  0.2880
-    ##  M6 - m7  -1.26667 0.288 482  -4.392  0.0008
-    ##  M6 - M7  -1.53333 0.288 482  -5.317  <.0001
-    ##  M6 - P4   0.17778 0.288 482   0.616  1.0000
-    ##  M6 - P5   0.23119 0.290 482   0.797  0.9997
-    ##  M6 - P8   0.75556 0.288 482   2.620  0.2715
-    ##  m7 - M7  -0.26667 0.288 482  -0.925  0.9989
-    ##  m7 - P4   1.44444 0.288 482   5.008  <.0001
-    ##  m7 - P5   1.49786 0.290 482   5.162  <.0001
-    ##  m7 - P8   2.02222 0.288 482   7.012  <.0001
-    ##  M7 - P4   1.71111 0.288 482   5.933  <.0001
-    ##  M7 - P5   1.76452 0.290 482   6.081  <.0001
-    ##  M7 - P8   2.28889 0.288 482   7.936  <.0001
-    ##  P4 - P5   0.05341 0.290 482   0.184  1.0000
-    ##  P4 - P8   0.57778 0.288 482   2.003  0.6910
-    ##  P5 - P8   0.52437 0.290 482   1.807  0.8136
-    ## 
-    ## Degrees-of-freedom method: kenward-roger 
-    ## P value adjustment: tukey method for comparing a family of 12 estimates
-
-``` r
-# 34/66 comparison significant at p<.05 level
-```
+documented in the Figure 1.
 
 #### Check discrimination of intervals within non-musicians
 
@@ -340,7 +240,7 @@ anova(m1)
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ``` r
-F_to_epsilon2(4.5092, 11, 275) # 0.12 [0.04, 1.00]
+F_to_epsilon2(4.5092, 11, 275) # effect size
 ```
 
     ## Epsilon2 (partial) |       95% CI
@@ -350,78 +250,78 @@ F_to_epsilon2(4.5092, 11, 275) # 0.12 [0.04, 1.00]
     ## - One-sided CIs: upper bound fixed at [1.00].
 
 ``` r
+# posthocs with multiple corrections
 emm <- emmeans(m1,specs = pairwise ~ Interval,pbkrtest.limit = 4345, type = "response")
-
 print(emm$contrasts)
 ```
 
     ##  contrast estimate    SE  df t.ratio p.value
-    ##  A4 - m2    1.5000 0.316 275   4.740  0.0002
-    ##  A4 - M2    0.8846 0.316 275   2.795  0.1878
-    ##  A4 - m3    1.0769 0.316 275   3.403  0.0361
-    ##  A4 - M3    0.5385 0.316 275   1.702  0.8663
-    ##  A4 - m6    0.4615 0.316 275   1.458  0.9502
-    ##  A4 - M6    0.0769 0.316 275   0.243  1.0000
-    ##  A4 - m7    0.3077 0.316 275   0.972  0.9981
-    ##  A4 - M7    0.8077 0.316 275   2.552  0.3125
-    ##  A4 - P4   -0.0385 0.316 275  -0.122  1.0000
-    ##  A4 - P5    0.3846 0.316 275   1.215  0.9874
-    ##  A4 - P8    0.9615 0.316 275   3.038  0.1033
     ##  m2 - M2   -0.6154 0.316 275  -1.945  0.7300
     ##  m2 - m3   -0.4231 0.316 275  -1.337  0.9735
     ##  m2 - M3   -0.9615 0.316 275  -3.038  0.1033
+    ##  m2 - P4   -1.5385 0.316 275  -4.862  0.0001
+    ##  m2 - A4   -1.5000 0.316 275  -4.740  0.0002
+    ##  m2 - P5   -1.1154 0.316 275  -3.525  0.0245
     ##  m2 - m6   -1.0385 0.316 275  -3.282  0.0523
     ##  m2 - M6   -1.4231 0.316 275  -4.497  0.0006
     ##  m2 - m7   -1.1923 0.316 275  -3.768  0.0107
     ##  m2 - M7   -0.6923 0.316 275  -2.188  0.5600
-    ##  m2 - P4   -1.5385 0.316 275  -4.862  0.0001
-    ##  m2 - P5   -1.1154 0.316 275  -3.525  0.0245
     ##  m2 - P8   -0.5385 0.316 275  -1.702  0.8663
     ##  M2 - m3    0.1923 0.316 275   0.608  1.0000
     ##  M2 - M3   -0.3462 0.316 275  -1.094  0.9948
+    ##  M2 - P4   -0.9231 0.316 275  -2.917  0.1408
+    ##  M2 - A4   -0.8846 0.316 275  -2.795  0.1878
+    ##  M2 - P5   -0.5000 0.316 275  -1.580  0.9150
     ##  M2 - m6   -0.4231 0.316 275  -1.337  0.9735
     ##  M2 - M6   -0.8077 0.316 275  -2.552  0.3125
     ##  M2 - m7   -0.5769 0.316 275  -1.823  0.8040
     ##  M2 - M7   -0.0769 0.316 275  -0.243  1.0000
-    ##  M2 - P4   -0.9231 0.316 275  -2.917  0.1408
-    ##  M2 - P5   -0.5000 0.316 275  -1.580  0.9150
     ##  M2 - P8    0.0769 0.316 275   0.243  1.0000
     ##  m3 - M3   -0.5385 0.316 275  -1.702  0.8663
+    ##  m3 - P4   -1.1154 0.316 275  -3.525  0.0245
+    ##  m3 - A4   -1.0769 0.316 275  -3.403  0.0361
+    ##  m3 - P5   -0.6923 0.316 275  -2.188  0.5600
     ##  m3 - m6   -0.6154 0.316 275  -1.945  0.7300
     ##  m3 - M6   -1.0000 0.316 275  -3.160  0.0742
     ##  m3 - m7   -0.7692 0.316 275  -2.431  0.3890
     ##  m3 - M7   -0.2692 0.316 275  -0.851  0.9995
-    ##  m3 - P4   -1.1154 0.316 275  -3.525  0.0245
-    ##  m3 - P5   -0.6923 0.316 275  -2.188  0.5600
     ##  m3 - P8   -0.1154 0.316 275  -0.365  1.0000
+    ##  M3 - P4   -0.5769 0.316 275  -1.823  0.8040
+    ##  M3 - A4   -0.5385 0.316 275  -1.702  0.8663
+    ##  M3 - P5   -0.1538 0.316 275  -0.486  1.0000
     ##  M3 - m6   -0.0769 0.316 275  -0.243  1.0000
     ##  M3 - M6   -0.4615 0.316 275  -1.458  0.9502
     ##  M3 - m7   -0.2308 0.316 275  -0.729  0.9999
     ##  M3 - M7    0.2692 0.316 275   0.851  0.9995
-    ##  M3 - P4   -0.5769 0.316 275  -1.823  0.8040
-    ##  M3 - P5   -0.1538 0.316 275  -0.486  1.0000
     ##  M3 - P8    0.4231 0.316 275   1.337  0.9735
+    ##  P4 - A4    0.0385 0.316 275   0.122  1.0000
+    ##  P4 - P5    0.4231 0.316 275   1.337  0.9735
+    ##  P4 - m6    0.5000 0.316 275   1.580  0.9150
+    ##  P4 - M6    0.1154 0.316 275   0.365  1.0000
+    ##  P4 - m7    0.3462 0.316 275   1.094  0.9948
+    ##  P4 - M7    0.8462 0.316 275   2.674  0.2451
+    ##  P4 - P8    1.0000 0.316 275   3.160  0.0742
+    ##  A4 - P5    0.3846 0.316 275   1.215  0.9874
+    ##  A4 - m6    0.4615 0.316 275   1.458  0.9502
+    ##  A4 - M6    0.0769 0.316 275   0.243  1.0000
+    ##  A4 - m7    0.3077 0.316 275   0.972  0.9981
+    ##  A4 - M7    0.8077 0.316 275   2.552  0.3125
+    ##  A4 - P8    0.9615 0.316 275   3.038  0.1033
+    ##  P5 - m6    0.0769 0.316 275   0.243  1.0000
+    ##  P5 - M6   -0.3077 0.316 275  -0.972  0.9981
+    ##  P5 - m7   -0.0769 0.316 275  -0.243  1.0000
+    ##  P5 - M7    0.4231 0.316 275   1.337  0.9735
+    ##  P5 - P8    0.5769 0.316 275   1.823  0.8040
     ##  m6 - M6   -0.3846 0.316 275  -1.215  0.9874
     ##  m6 - m7   -0.1538 0.316 275  -0.486  1.0000
     ##  m6 - M7    0.3462 0.316 275   1.094  0.9948
-    ##  m6 - P4   -0.5000 0.316 275  -1.580  0.9150
-    ##  m6 - P5   -0.0769 0.316 275  -0.243  1.0000
     ##  m6 - P8    0.5000 0.316 275   1.580  0.9150
     ##  M6 - m7    0.2308 0.316 275   0.729  0.9999
     ##  M6 - M7    0.7308 0.316 275   2.309  0.4726
-    ##  M6 - P4   -0.1154 0.316 275  -0.365  1.0000
-    ##  M6 - P5    0.3077 0.316 275   0.972  0.9981
     ##  M6 - P8    0.8846 0.316 275   2.795  0.1878
     ##  m7 - M7    0.5000 0.316 275   1.580  0.9150
-    ##  m7 - P4   -0.3462 0.316 275  -1.094  0.9948
-    ##  m7 - P5    0.0769 0.316 275   0.243  1.0000
     ##  m7 - P8    0.6538 0.316 275   2.066  0.6473
-    ##  M7 - P4   -0.8462 0.316 275  -2.674  0.2451
-    ##  M7 - P5   -0.4231 0.316 275  -1.337  0.9735
     ##  M7 - P8    0.1538 0.316 275   0.486  1.0000
-    ##  P4 - P5    0.4231 0.316 275   1.337  0.9735
-    ##  P4 - P8    1.0000 0.316 275   3.160  0.0742
-    ##  P5 - P8    0.5769 0.316 275   1.823  0.8040
     ## 
     ## Degrees-of-freedom method: kenward-roger 
     ## P value adjustment: tukey method for comparing a family of 12 estimates
@@ -430,11 +330,114 @@ print(emm$contrasts)
 # 7/66 comparison significant at p<.05 level
 ```
 
+#### Check discrimination of intervals within musicians
+
+``` r
+m1 <- lmer(tensionrating ~ Interval + (1|participant),data = dplyr::filter(df,Group2=='Musicians'))
+print(anova(m1))
+```
+
+    ## Type III Analysis of Variance Table with Satterthwaite's method
+    ##          Sum Sq Mean Sq NumDF  DenDF F value    Pr(>F)    
+    ## Interval 367.42  33.402    11 482.16  17.848 < 2.2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+F_to_epsilon2(17.848, 11, 482.16) # effect size
+```
+
+    ## Epsilon2 (partial) |       95% CI
+    ## ---------------------------------
+    ## 0.27               | [0.21, 1.00]
+    ## 
+    ## - One-sided CIs: upper bound fixed at [1.00].
+
+``` r
+# posthocs with multiple corrections
+emm <- emmeans(m1,specs = pairwise ~ Interval,pbkrtest.limit = 4345, type = "response")
+emm$contrasts
+```
+
+    ##  contrast estimate    SE  df t.ratio p.value
+    ##  m2 - M2   0.44444 0.288 482   1.541  0.9283
+    ##  m2 - m3   1.33333 0.288 482   4.623  0.0003
+    ##  m2 - M3   1.55556 0.288 482   5.394  <.0001
+    ##  m2 - P4   1.60000 0.288 482   5.548  <.0001
+    ##  m2 - A4  -0.42222 0.288 482  -1.464  0.9494
+    ##  m2 - P5   1.65341 0.290 482   5.698  <.0001
+    ##  m2 - m6   1.42614 0.290 482   4.915  0.0001
+    ##  m2 - M6   1.42222 0.288 482   4.931  0.0001
+    ##  m2 - m7   0.15556 0.288 482   0.539  1.0000
+    ##  m2 - M7  -0.11111 0.288 482  -0.385  1.0000
+    ##  m2 - P8   2.17778 0.288 482   7.551  <.0001
+    ##  M2 - m3   0.88889 0.288 482   3.082  0.0896
+    ##  M2 - M3   1.11111 0.288 482   3.853  0.0073
+    ##  M2 - P4   1.15556 0.288 482   4.007  0.0041
+    ##  M2 - A4  -0.86667 0.288 482  -3.005  0.1102
+    ##  M2 - P5   1.20897 0.290 482   4.167  0.0021
+    ##  M2 - m6   0.98169 0.290 482   3.383  0.0368
+    ##  M2 - M6   0.97778 0.288 482   3.390  0.0360
+    ##  M2 - m7  -0.28889 0.288 482  -1.002  0.9976
+    ##  M2 - M7  -0.55556 0.288 482  -1.926  0.7422
+    ##  M2 - P8   1.73333 0.288 482   6.010  <.0001
+    ##  m3 - M3   0.22222 0.288 482   0.771  0.9998
+    ##  m3 - P4   0.26667 0.288 482   0.925  0.9989
+    ##  m3 - A4  -1.75556 0.288 482  -6.087  <.0001
+    ##  m3 - P5   0.32008 0.290 482   1.103  0.9945
+    ##  m3 - m6   0.09281 0.290 482   0.320  1.0000
+    ##  m3 - M6   0.08889 0.288 482   0.308  1.0000
+    ##  m3 - m7  -1.17778 0.288 482  -4.084  0.0030
+    ##  m3 - M7  -1.44444 0.288 482  -5.008  <.0001
+    ##  m3 - P8   0.84444 0.288 482   2.928  0.1344
+    ##  M3 - P4   0.04444 0.288 482   0.154  1.0000
+    ##  M3 - A4  -1.97778 0.288 482  -6.858  <.0001
+    ##  M3 - P5   0.09786 0.290 482   0.337  1.0000
+    ##  M3 - m6  -0.12942 0.290 482  -0.446  1.0000
+    ##  M3 - M6  -0.13333 0.288 482  -0.462  1.0000
+    ##  M3 - m7  -1.40000 0.288 482  -4.854  0.0001
+    ##  M3 - M7  -1.66667 0.288 482  -5.779  <.0001
+    ##  M3 - P8   0.62222 0.288 482   2.157  0.5814
+    ##  P4 - A4  -2.02222 0.288 482  -7.012  <.0001
+    ##  P4 - P5   0.05341 0.290 482   0.184  1.0000
+    ##  P4 - m6  -0.17386 0.290 482  -0.599  1.0000
+    ##  P4 - M6  -0.17778 0.288 482  -0.616  1.0000
+    ##  P4 - m7  -1.44444 0.288 482  -5.008  <.0001
+    ##  P4 - M7  -1.71111 0.288 482  -5.933  <.0001
+    ##  P4 - P8   0.57778 0.288 482   2.003  0.6910
+    ##  A4 - P5   2.07563 0.290 482   7.153  <.0001
+    ##  A4 - m6   1.84836 0.290 482   6.370  <.0001
+    ##  A4 - M6   1.84444 0.288 482   6.395  <.0001
+    ##  A4 - m7   0.57778 0.288 482   2.003  0.6910
+    ##  A4 - M7   0.31111 0.288 482   1.079  0.9954
+    ##  A4 - P8   2.60000 0.288 482   9.015  <.0001
+    ##  P5 - m6  -0.22727 0.292 482  -0.779  0.9998
+    ##  P5 - M6  -0.23119 0.290 482  -0.797  0.9997
+    ##  P5 - m7  -1.49786 0.290 482  -5.162  <.0001
+    ##  P5 - M7  -1.76452 0.290 482  -6.081  <.0001
+    ##  P5 - P8   0.52437 0.290 482   1.807  0.8136
+    ##  m6 - M6  -0.00392 0.290 482  -0.013  1.0000
+    ##  m6 - m7  -1.27058 0.290 482  -4.379  0.0009
+    ##  m6 - M7  -1.53725 0.290 482  -5.298  <.0001
+    ##  m6 - P8   0.75164 0.290 482   2.590  0.2880
+    ##  M6 - m7  -1.26667 0.288 482  -4.392  0.0008
+    ##  M6 - M7  -1.53333 0.288 482  -5.317  <.0001
+    ##  M6 - P8   0.75556 0.288 482   2.620  0.2715
+    ##  m7 - M7  -0.26667 0.288 482  -0.925  0.9989
+    ##  m7 - P8   2.02222 0.288 482   7.012  <.0001
+    ##  M7 - P8   2.28889 0.288 482   7.936  <.0001
+    ## 
+    ## Degrees-of-freedom method: kenward-roger 
+    ## P value adjustment: tukey method for comparing a family of 12 estimates
+
+``` r
+# 34/66 comparison significant at p<.05 level
+```
+
 ## Visualise tension ratings of both groups
 
 ``` r
 # take the means and 95% CIs
-
 S <- df %>%
   group_by(Interval,Group2) %>%
   summarize(n=n(),M=mean(tensionrating,na.rm = TRUE),sd=sd(tensionrating,na.rm = TRUE)) %>%
@@ -470,7 +473,11 @@ fig_india <- ggplot(S,aes(Interval,M,color=Expertise,group=Expertise,linestyle=E
 print(fig_india)
 ```
 
-![](README_files/figure-gfm/figure-1.png)<!-- -->
+![Mean tension ratings for all intervals across expertise. Statistical
+significance testing based on LMM analysis and multiple comparison
+adjusted posthoc comparisons for between groups (upper part of the plot)
+and within groups (lower part of the plot), see text for statistical
+details.](README_files/figure-gfm/figure-1.png)
 
 #### Session information
 
